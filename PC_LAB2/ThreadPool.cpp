@@ -20,18 +20,17 @@ void ThreadPool::init()
 	m_initialised = true;
 	min_time = max_time = 0;
 
+	m_queue.set_max_size(MAX_Q_SIZE);
 	m_threads.reserve(MAX_THREAD_NUM);
+
 	for (int i = 0; i < MAX_THREAD_NUM; i++)
-	{
 		m_threads.push_back(thread(&ThreadPool::routine, this));
-	}
 }
 
 void ThreadPool::add_task(Task* task)
 {
-	if (m_queue.get_size() < MAX_Q_SIZE)
+	if(m_queue.push(task))
 	{
-		m_queue.push(task);
 		//unique_lock<mutex> u_lock(m_clock_mutex);
 		unique_lock<mutex> u_lock(m_rw_mutex);
 		if (m_queue.get_size() == MAX_Q_SIZE)
@@ -72,7 +71,6 @@ void ThreadPool::routine()
 					else if (time > max_time)
 						max_time = time;
 				}
-
 				task = m_queue.pop();
 			}
 			catch (out_of_range& e)
@@ -80,7 +78,6 @@ void ThreadPool::routine()
 				cout << e.what() << endl;
 			}
 		}
-
 		task->do_work();
 	}
 }
