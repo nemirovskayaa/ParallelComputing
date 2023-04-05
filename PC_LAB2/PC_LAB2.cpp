@@ -1,16 +1,9 @@
 // PC_LAB2.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
-#include <iostream>
-#include <thread>
-#include <shared_mutex>
-#include <Windows.h>
-#include <unordered_map>
-#include <vector>
-#include <queue>
 #include "Task.h"
-#include "ConcurrencyQueue.h"
 #include "ThreadPool.h"
+#include <unordered_map>
 
 using namespace std;
 
@@ -39,12 +32,11 @@ int main()
     if (!SetConsoleMode(h_std_inp, ENABLE_INSERT_MODE))
         error_exit("Invalid set mode.");
 
-
-    bool stop_flag = false;
+    bool stop_print_flag = false;
     unsigned long long min_full_q_time, max_full_q_time;
     unordered_map<unsigned int, Task*> tasks_to_print;
 
-    thread print_th = thread(print_info, ref(tasks_to_print), ref(stop_flag),
+    thread print_th = thread(print_info, ref(tasks_to_print), ref(stop_print_flag),
         ref(min_full_q_time), ref(max_full_q_time));
 
     {
@@ -68,7 +60,7 @@ int main()
         max_full_q_time = tp.max_time;
     }
 
-    stop_flag = true;
+    stop_print_flag = true;
     print_th.join();
 
     for (auto i : tasks_to_print)
@@ -79,52 +71,6 @@ int main()
     }
 
     SetConsoleMode(h_std_inp, initial_mode);
-}
-
-void error_exit(const string message)
-{
-    cout << message << endl;
-    SetConsoleMode(h_std_inp, initial_mode);
-    ExitProcess(0);
-}
-
-bool key_process(KEY_EVENT_RECORD key_record, ThreadPool& tp, unordered_map<unsigned int, Task*>& tasks_to_print)
-{
-    if (key_record.bKeyDown)
-    {
-        switch (key_record.uChar.UnicodeChar)
-        {
-        case 'a': // add tasks
-        {
-            cout << "Adding tasks to queue..." << endl;
-            thread add_th = thread(add_to_pool, ref(tp), ref(tasks_to_print));
-            add_th.join();
-            return false;
-        }
-        case 'p': // pause
-            cout << "Thread pool was paused." << endl;
-            tp.pause();
-            return false;
-        
-        case 'r': // resume
-            cout << "Thread pool was resumed." << endl;
-            tp.resume();
-            return false;
-        
-        case 'b': // break
-            cout << "Thread pool was stopped." << endl;
-            tp.break_safe();
-            return true;
-        
-        case 'm': // break momentary
-            cout << "Thread pool was momentary stopped." << endl;
-            tp.break_momentary();
-            return true;
-        
-        }
-    }
-
-    return false;
 }
 
 void add_to_pool(ThreadPool& tp, unordered_map<unsigned int, Task*>& tasks)
@@ -184,13 +130,59 @@ void print_info(unordered_map<unsigned int, Task*>& tasks, bool& stop_flag,
         Sleep(4000);
     }
 
-    cout << string(50, '-') << endl;
+    if (!tasks.empty())
+        cout << string(50, '-') << endl;
+
     for (auto i : tasks)
         cout << (*i.second).get_string() << endl;
 
-    cout << string(25, '-') << endl;
+    cout << string(30, '-') << endl;
     cout << "Final statistic: " << endl;
     cout << "Amount of ignored tasks: " << ignored_tasks << endl;
     cout << "Full queue MIN time:     " << min_full_q_time << endl;
     cout << "Full queue MAX time:     " << max_full_q_time << endl;
+}
+
+void error_exit(const string message)
+{
+    cout << message << endl;
+    SetConsoleMode(h_std_inp, initial_mode);
+    ExitProcess(0);
+}
+
+bool key_process(KEY_EVENT_RECORD key_record, ThreadPool& tp, unordered_map<unsigned int, Task*>& tasks_to_print)
+{
+    if (key_record.bKeyDown)
+    {
+        switch (key_record.uChar.UnicodeChar)
+        {
+        case 'a': // add tasks
+        {
+            cout << "Adding tasks to queue..." << endl;
+            thread add_th = thread(add_to_pool, ref(tp), ref(tasks_to_print));
+            add_th.join();
+            return false;
+        }
+        case 'p': // pause
+            cout << "Thread pool was paused." << endl;
+            tp.pause();
+            return false;
+
+        case 'r': // resume
+            cout << "Thread pool was resumed." << endl;
+            tp.resume();
+            return false;
+
+        case 'b': // break
+            cout << "Thread pool was stopped." << endl;
+            tp.break_safe();
+            return true;
+
+        case 'm': // break momentary
+            cout << "Thread pool was momentary stopped." << endl;
+            tp.break_momentary();
+            return true;
+        }
+    }
+    return false;
 }
