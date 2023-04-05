@@ -39,14 +39,31 @@ string Task::get_string()
 	return ret_str;
 }
 
-void Task::set_status(Status status)
-{
-	unique_lock<shared_mutex> u_lock(m_rw_mutex);
-	m_status = status;
-}
-
 Status Task::get_status()
 {
 	shared_lock<shared_mutex> s_lock(m_rw_mutex);
 	return m_status;
+}
+
+string Task::get_status_str()
+{
+	switch (m_status)
+	{
+	case Status::IS_STORING:
+		return "IS STORING";
+	case Status::IGNORED:
+		return "WAS IGNORED";
+	case Status::IS_PROCESSING:
+		return "IS PROCESSING...";
+	case Status::EXECUTED:
+		return "WAS EXECUTED";
+	default:
+		return "STATUS ERROR";
+	}
+}
+
+void Task::set_status(Status status)
+{
+	unique_lock<shared_mutex> u_lock(m_rw_mutex);
+	m_status = status;
 }

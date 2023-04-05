@@ -23,7 +23,7 @@ private:
 	unsigned int m_taskID;
 
 	Status m_status;
-	mutable shared_mutex m_rw_mutex;
+	shared_mutex m_rw_mutex;
 	unsigned int m_duration_ms;
 	chrono::high_resolution_clock::time_point m_start_time;
 	chrono::high_resolution_clock::time_point m_end_time;
@@ -34,27 +34,11 @@ public:
 	~Task();
 	void do_work();
 
-	void set_status(Status);
-	Status get_status();
 	unsigned int get_ID();
 	string get_string();
-
-	string get_status_str()
-	{
-		switch (m_status)
-		{
-		case Status::IS_STORING:
-			return "IS STORING";
-		case Status::IGNORED:
-			return "WAS IGNORED";
-		case Status::IS_PROCESSING:
-			return "IS PROCESSING...";
-		case Status::EXECUTED:
-			return "WAS EXECUTED";
-		default:
-			return "STATUS ERROR";
-		}
-	}
+	Status get_status();
+	string get_status_str();
+	void set_status(Status);
 
 	Task& operator= (const Task&) { return *this; };
 	Task& operator= (const Task&&) { return *this; };
