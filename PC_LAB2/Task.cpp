@@ -7,6 +7,9 @@ Task::Task()
 	m_taskID = ++s_ID;
 	m_status = Status::IS_STORING;
 	m_duration_ms = MIN_TASK_TIME + rand() % (MAX_TASK_TIME - MIN_TASK_TIME + 1);
+	m_result_time = chrono::milliseconds(0);
+
+	//val = 0;
 }
 
 Task::~Task()
@@ -20,6 +23,9 @@ void Task::do_work()
 	m_start_time = chrono::high_resolution_clock::now();
 
 	Sleep(m_duration_ms);
+
+	//for (int i = 0; i < 10; i++)
+		//val++;
 
 	m_end_time = chrono::high_resolution_clock::now();
 	m_result_time = chrono::duration_cast<chrono::milliseconds>(m_end_time - m_start_time);
@@ -41,7 +47,7 @@ string Task::get_string()
 
 Status Task::get_status()
 {
-	shared_lock<shared_mutex> s_lock(m_rw_mutex);
+	//shared_lock<shared_mutex> s_lock(m_rw_mutex);
 	return m_status;
 }
 
@@ -64,6 +70,6 @@ string Task::get_status_str()
 
 void Task::set_status(Status status)
 {
-	unique_lock<shared_mutex> u_lock(m_rw_mutex);
+	//unique_lock<shared_mutex> u_lock(m_rw_mutex);
 	m_status = status;
 }

@@ -23,13 +23,15 @@ private:
 	unsigned int m_taskID;
 
 	Status m_status;
-	shared_mutex m_rw_mutex;
 	unsigned int m_duration_ms;
 	chrono::high_resolution_clock::time_point m_start_time;
 	chrono::high_resolution_clock::time_point m_end_time;
 	chrono::milliseconds m_result_time;
+	//shared_mutex m_rw_mutex;
 
 public:
+	//unsigned int val;
+
 	Task();
 	~Task();
 	void do_work();
